@@ -1,16 +1,11 @@
 import random
 from multiprocessing import Pool, cpu_count
-
-import gym
-
-from irlc.ex09.mdp import GymEnv2MDP
 import numpy as np
 import decimal
 from itertools import repeat
 from irlc.ex09.rl_agent import TabularAgent
 from BachelorDRQL.Environments.cliffwalking_online_env import CliffWalkingEnvironment
-from BachelorDRQL.Environments.supply_chain_env import SupplyChainModel
-from irlc.ex09.mdp import rng_from_dict
+
 
 def f(array, var, delta):
     m_og = min(array)
@@ -183,7 +178,7 @@ t_res = []
 sample_res = []
 res = []
 
-def mainLoop(step_down,delta=0):
+def MpLoop(step_down, delta=0):
     print("Started  ", step_down, flush=True)
     env_ = CliffWalkingEnvironment(step_down=step_down, render_mode="ansi")
     s0, info = env_.reset()
@@ -198,17 +193,17 @@ if __name__ == "__main__":
     step_array = [0.025, 0.05, 0.075, 0.1, 0.125, 0.150, 0.175, 0.2]
 
     res_total0 = []
-    for kolort in range(1):
+    for delta0_it in range(1):
         with Pool(processes=cpu_count()) as pool1:
-            res = pool1.starmap(mainLoop, zip(step_array, repeat(0)))
+            res = pool1.starmap(MpLoop, zip(step_array, repeat(0)))
         print(res)
         res_total0.append(res)
     print(res_total0)
 
     res_total1 = []
-    for kolort in range(1):
+    for delta1_it in range(1):
         with Pool(processes=cpu_count()) as pool1:
-            res = pool1.starmap(mainLoop, zip(step_array, repeat(1)))
+            res = pool1.starmap(MpLoop, zip(step_array, repeat(1)))
         print(res)
         res_total1.append(res)
     print(res_total0)
