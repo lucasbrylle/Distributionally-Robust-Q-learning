@@ -6,14 +6,6 @@
 
 This repo contains my implementation of a Distributionally Robust Q-learning (DRQL) algorithm from Zijian Liu's "Distributionally Robust Q-learning" (2023). The implementation was made in relation with my bachelors thesis. The DRQL-algorithm have been expanded to also be able to act in an online setting, where the environment is not fully defined. This is done by implementing an exploration strategy for the agent. 
 
-## Table of Contents
-
-- [Installation](#installation)
-- [License](#license)
-- [Contact](#contact)
-- [Acknowledgements](#Acknowledgements)
-
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
