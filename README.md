@@ -8,7 +8,7 @@ This repo contains my implementation of a Distributionally Robust Q-learning (DR
 
 ## Contact
 
-If any question, i can be contacted at lucasbrylle6@gmail.com (private mail) or my student email s203832@dtu.dk 
+If any question, i can be contacted at my student email s203832@dtu.dk 
 
 ## Acknowledgements
 
