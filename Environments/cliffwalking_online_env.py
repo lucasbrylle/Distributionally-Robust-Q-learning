@@ -17,6 +17,8 @@ RIGHT = 1
 DOWN = 2
 LEFT = 3
 
+"""Following environment is taken from openAI gym library https://github.com/openai/gym. It is adapted to fit the
+environment discussed in the thesis, where an step-down parameter is added"""
 
 class CliffWalkingEnvironment(gym.Env):
     """
@@ -151,12 +153,10 @@ class CliffWalkingEnvironment(gym.Env):
         is_terminated = tuple(new_position) == terminal_state
 
         return [(1.0, new_state, -1, is_terminated)]
-
+    """Used to be enable to perform a step without moving, so samples can be made without influencing the environment"""
     def sample_rewards(self, s, a):
         if random.random() < self.step_down:
             a = 2
-
-
         transitions = self.P[s][a]
         i = categorical_sample([t[0] for t in transitions], self.np_random)
         p, s, r, t = transitions[i]
@@ -164,6 +164,7 @@ class CliffWalkingEnvironment(gym.Env):
 
         return (int(s), r, t, False, {"prob": p})
 
+    """Limits the action space, so it will not be able to move out of bounds"""
     def A(self, state):
         actions = [0, 1, 2, 3]
         if state == 84:
@@ -182,6 +183,7 @@ class CliffWalkingEnvironment(gym.Env):
             actions = []
         return actions
 
+    """To create a dictionary that contains the probability of all s' and reward pairs possible"""
     def Psr(self, state, action):
         d = defaultdict(float)
         for (pr, sp, reward, done) in self.P[state][action]:

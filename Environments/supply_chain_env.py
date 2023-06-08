@@ -24,6 +24,7 @@ def exact_solution(mdp, gamma=0.9):
 
     return qs, {s: np.argmax(q) for s, q in qs.items()}
 
+"""The following MDP-definition uses the MDP-framework from Tue Herlaus course 02465 - "Introduction to reinforcement learning and control theory"""
 
 class SupplyChainModel(MDP):
 
@@ -34,10 +35,9 @@ class SupplyChainModel(MDP):
         self.b = b
         self.m = m
 
-
-        # Demand dist is the distribution used for the given MDP
         self.demand_dist = {}
 
+        """Demand distribution for the given parameters b and m"""
         for d in range(n + 1):
             if (d == m) or (d == m + 1):
                 pd = (b + 1) / (n + 1)
@@ -51,19 +51,19 @@ class SupplyChainModel(MDP):
 
         super().__init__(initial_state=0)
 
-
-    # Not done - since non-terminal
     def is_terminal(self, state):  # !f Return true only if state is terminal.
         """ Implement if the state is terminal (0 or self.goal) """
         return False
 
+    """Action space for a given state"""
     def A(self, s):
         return list(range(self.n + 1 - s))
 
+    """
+    Dictionary for s' and reward probabilites
+    """
     def Psr(self, s, a):
-        """
-        Old code can be found in junk
-        """
+
         # Parameters for cost function
         h = 1
         p = 2
@@ -91,7 +91,7 @@ class SupplyChainModel(MDP):
         assert np.abs(sum(pp.values()) - 1) < 1e-8
         return pp
 
-
+    """From 02465 - "Introduction to reinforcement learning and control theory"""
     def p_sa(self, s, a):
         """ Represent p_{s,a} from the paper. I.e. the distribution of p(s' | s,a)"""
         pp = defaultdict(float)
@@ -99,6 +99,7 @@ class SupplyChainModel(MDP):
             pp[sp] += p
         return pp
 
+    """From 02465 - "Introduction to reinforcement learning and control theory"""
     def get_KL_distance_from(self, p0_sa):
         """
         Let the distribution in this class be p(s', r | s,a). This will compute the KL distance from that distribution to
@@ -118,55 +119,3 @@ class SupplyChainModel(MDP):
 
         delta = max(kl)
         return delta
-
-
-if __name__ == "__main__":
-    # Creation of MDP
-    mdp = SupplyChainModel(b=1, m=0)
-    print(mdp.nonterminal_states)
-    print("Uniform distribution: ", mdp.demand_dist)
-    #q_uniform = {sp: 1/(mdp.n+1) for sp in range(mdp.n+ 1)}
-    p0_sa = {}
-
-    for s in range(mdp.n + 1):
-        for a in range(mdp.n + 1):
-            p0_sa[s,a] = mdp.p_sa(s, a)
-
-    b_array = [1]
-    m_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    for b_val in b_array:
-        m_worst_case = [-math.inf for i in range(10)]
-        index = 0
-
-        for m_val in m_array:
-            mdp = SupplyChainModel(n = 10, b=b_val, m=m_val)
-            pi, v = value_iteration(mdp, gamma=0.90)
-            print(v)
-            print(pi)
-            m_worst_case[m_val] = max(v.values())
-            index += 1
-        mdp = SupplyChainModel(n=10, b=b_val, m=0)
-        pi, v = policy_iteration(mdp, gamma=0.9)
-        print(pi)
-        print("M_WC", m_worst_case)
-        #mDRQL = np.array([-112.58941607745345, -109.76472047492409, -109.15195337360718, -109.86018458914815, -109.41617485748958, -109.53460885382836, -108.99232380461915, -109.68685218698411, -108.36501609555184, -109.60118885953402])
-        mDRQL = np.array([-88.13675905076124, -85.26639565581254, -83.86152834283286, -84.50176989389952, -83.3110157395251, -82.8940606206749, -83.17368252018316, -83.98311316712122, -85.81724257990676, -90.3356267393368])
-        plt.plot(m_array, m_worst_case, "o", color = "orange", label = "Non-drql")
-        plt.plot(m_array, -mDRQL, "o", color = "blue", label = "drql")
-
-        plt.xlim(-1,10)
-        plt.xticks(np.arange(0, 10, 1))
-        plt.ylim(45,70)
-        plt.xlabel("Values of m")
-        plt.ylabel("Cost")
-        plt.title("Plot of non-drql and drql for b = " + str(b_val))
-        plt.legend(loc="best")
-        plt.show()
-        print("V = ", v)
-        print("KL dist: ", mdp.get_KL_distance_from(p0_sa))
-
-        break
-
-
-
-# Policy evaluation sutton, få implementeret egen - skab orange
