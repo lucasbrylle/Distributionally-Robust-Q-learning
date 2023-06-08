@@ -5,12 +5,15 @@ import decimal
 from itertools import repeat
 from BachelorDRQL.Environments.supply_chain_env import SupplyChainModel
 
+
 def rng_from_dict(d):
+    """Function is from Tue Herlau's course 02465 - "Introduction to reinforcement learning and control theory"""""
     """ Helper function. If d is a dictionary {x1: p1, x2: p2, ...} then this will sample an x_i with probability p_i """
     w, pw = zip(*d.items())             # seperate w and p(w)
     i = np.random.choice(len(w), p=pw)  # Required because numpy cast w to array (and w may contain tuples)
     return w[i]
 
+"""Supreme function in liu22"""
 def f(array, var, delta):
     m_og = min(array)
     asarray = np.asarray(array)
@@ -21,6 +24,7 @@ def f(array, var, delta):
     v = m_og - var * (np.log(np.mean(exp_term))) - (var * delta)
     return v
 
+"""Derivative of supreme function in liu22"""
 def f_diff(array, var, delta):
     m_diff = min(array)
     asarray = np.asarray(array)
@@ -32,6 +36,7 @@ def f_diff(array, var, delta):
     v = m_diff - delta - np.log(np.mean(exp_term)) - (np.sum(z * exp_term) / np.sum(exp_term))
     return v
 
+"""Initialisation of Q-dictionary. Nested dictionaries stores the Q-value for each state action pair, e.g. Q[s][a]"""
 def init_Q(n_s, n_a):
     Q = {}
     for s in range(n_s):
@@ -40,9 +45,12 @@ def init_Q(n_s, n_a):
             Q[s][a] = 0
     return Q
 
+"""Geometric distribution used to determine N samples for the given iteration"""
 def stopping_time(epsilon):
     n = np.random.geometric(p=epsilon, size=1)[0]
     return n
+
+"""Takes in an array of s' and finds the Q-value that is the greatest for that state"""
 def get_Q_max(Q, states, delta):
     Q_array = []
     for s in states:
@@ -51,6 +59,8 @@ def get_Q_max(Q, states, delta):
         Q_array.append(Q[s][Qa_])
 
     return Q_array
+
+"""Draws N samples from a simulator, by accesing the mdp.Psr object, that has the probability for each transition. """
 def generate_samples(N, state, action, mdp):
     s_next = []
     rewards = []
@@ -62,6 +72,8 @@ def generate_samples(N, state, action, mdp):
         rewards.append(-reward)
 
     return s_next, rewards
+
+"""Bisection the derrivative of the supreme function"""
 def bisection_method(array_bi, delta, a, b, var, tol):
     out_diff = f_diff(array_bi, var, delta)
 
@@ -72,6 +84,8 @@ def bisection_method(array_bi, delta, a, b, var, tol):
         return bisection_method(array_bi, delta, a, var, (a + var) / 2, tol)
     if out_diff > 0:
         return bisection_method(array_bi, delta, var, b, (b + var) / 2, tol)
+
+"""Used to handle some of the corner cases of the derrivative, if not a corner cases bisection is started"""
 def find_sup(array_sup, delta):
     if f_diff(array_sup, 0.001, delta) < 0:
         sup = f(array_sup, 0.001, delta)
@@ -82,6 +96,7 @@ def find_sup(array_sup, delta):
         sup = 0
     return sup
 
+"""Handles the \Delta_r and \Delta_q expression from liu22"""
 def Delta(d, delta):
     d_2nd = d[::2]
     d_2nd_m1 = d[1::2]
@@ -93,9 +108,10 @@ def Delta(d, delta):
     l = l1 - 0.5 * l2 - 0.5 * l3
 
     return l
+
+"""DRQL-Algorithm """
 def DRQL_math(mdp, Q, gamma, epsilon, tolerance, delta):
     t = 1
-    # n_array = []
     samples = 0
     converged = False
     while not converged:
@@ -122,7 +138,6 @@ def DRQL_math(mdp, Q, gamma, epsilon, tolerance, delta):
                 T_epsilon = R_rob + gamma * T_rob
 
                 alpha_t = 1 / (1 + (1 - gamma) * (t - 1))
-                # Std. Q-learning: T_epsilon = R + gamma max_b Q[s´, b]
                 Q_update = (1 - alpha_t) * Q[state][action] + alpha_t * T_epsilon
 
                 diff = abs(Q_update - Q[state][action])
@@ -142,12 +157,7 @@ def DRQL_math(mdp, Q, gamma, epsilon, tolerance, delta):
 
         t += 1
     return Q, t, samples
-
-Q_res = []
-t_res = []
-sample_res = []
-
-
+"""Function that enables MultiProcessing"""
 def MpLoop(b, m, n=10, delta=1):
     print("Started - M = ", m, flush=True)
     mdp = SupplyChainModel(n=n, b=b, m=m)
@@ -157,6 +167,10 @@ def MpLoop(b, m, n=10, delta=1):
 
 
 if __name__ == "__main__":
+    Q_res = []
+    t_res = []
+    sample_res = []
+
     decimal.getcontext().prec = 5
 
     m_args = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]

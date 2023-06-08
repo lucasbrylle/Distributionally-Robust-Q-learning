@@ -6,7 +6,7 @@ from itertools import repeat
 from irlc.ex09.rl_agent import TabularAgent
 from BachelorDRQL.Environments.cliffwalking_online_env import CliffWalkingEnvironment
 
-
+"""Supreme function in liu22"""
 def f(array, var, delta):
     m_og = min(array)
     asarray = np.asarray(array)
@@ -16,6 +16,7 @@ def f(array, var, delta):
 
     v = m_og - var * (np.log(np.mean(exp_term))) - (var * delta)
     return v
+"""Derivative of supreme function in liu22"""
 def f_diff(array, var, delta):
     m_diff = min(array)
     asarray = np.asarray(array)
@@ -26,6 +27,8 @@ def f_diff(array, var, delta):
     #v = m_diff - delta - np.log(np.mean(exp_term)) - m_diff - (np.sum(z * exp_term) / np.sum(exp_term))
     v = m_diff - delta - np.log(np.mean(exp_term)) - (np.sum(z * exp_term) / np.sum(exp_term))
     return v
+
+"""Initialisation of Q-dictionary. Nested dictionaries stores the Q-value for each state action pair, e.g. Q[s][a]"""
 def init_Q(n_s, n_a):
     Q = {}
     for s in range(n_s):
@@ -33,9 +36,12 @@ def init_Q(n_s, n_a):
         for a in range(n_a):
             Q[s][a] = 0
     return Q
+"""Geometric distribution used to determine N samples for the given iteration"""
 def stopping_time(epsilon):
     n = np.random.geometric(p=epsilon, size=1)[0]
     return n
+
+"""Takes in an array of s' and finds the Q-value that is the greatest for that state"""
 def get_Q_max(Q, states, delta):
     Q_array = []
     for s in states:
@@ -43,6 +49,7 @@ def get_Q_max(Q, states, delta):
         Qa_ = np.argmax(np.asarray(Qa) + np.random.rand(len(Qa)) * 1e-8)
         Q_array.append(Q[s][actions[Qa_]])
     return Q_array
+"""Draws N samples from a simulator, by accesing the mdp.Psr object, that has the probability for each transition. """
 def generate_samples(N, state, action,env):
     s_next = []
     rewards = []
@@ -53,6 +60,8 @@ def generate_samples(N, state, action,env):
         rewards.append(r)
 
     return s_next, rewards
+
+"""Bisection the derrivative of the supreme function"""
 def bisection_method(array_bi, delta, a, b, var, tol):
     out_diff = f_diff(array_bi, var, delta)
 
@@ -63,6 +72,7 @@ def bisection_method(array_bi, delta, a, b, var, tol):
         return bisection_method(array_bi, delta, a, var, (a + var) / 2, tol)
     if out_diff > 0:
         return bisection_method(array_bi, delta, var, b, (b + var) / 2, tol)
+"""Used to handle some of the corner cases of the derrivative, if not a corner cases bisection is started"""
 def find_sup(array_sup, delta):
     # if np.all(np.array(array_sup[0] == np.array(array_sup))):
     #    return array_sup[0]
@@ -75,20 +85,8 @@ def find_sup(array_sup, delta):
     if sup < 0:
         sup = 0
     return sup
-    """
-    if np.all(np.array(array_sup[0] == np.array(array_sup))):
-        return array_sup[0]
-    if np.sign(f_diff(array_sup, 0.001, delta)) == np.sign(f_diff(array_sup, 10000, delta)):
-        sup = f(array_sup, 0.001, delta)
-    elif f_diff(array_sup, 0.001,  delta) < 0:
-        sup = f(array_sup, 0.001, delta)
-    elif np.log(len(array_sup) / array_sup.count(min(array_sup))) <= delta:
-        sup = f(array_sup, 0.001, delta)
-    else:
-        var = bisection_method(array_sup, delta, 0.001, 1000, 1, 0.001)
-        sup = f(array_sup, var, delta)
 
-    """
+"""Handles the \Delta_r and \Delta_q expression from liu22"""
 def Delta(d, delta):
     d_2nd = d[::2]
     d_2nd_m1 = d[1::2]
@@ -101,6 +99,7 @@ def Delta(d, delta):
 
     return l
 
+"""DRQL-agent class """
 class DRQL_agent(TabularAgent):
     def __init__(self, env, gamma=0.9, epsilon_dist=0.5, epsilon_disc=0.1, delta=1, t=1):
         self.t = t
@@ -110,11 +109,13 @@ class DRQL_agent(TabularAgent):
         self.delta = delta
         super().__init__(env, gamma, epsilon_disc)
 
+    """Epsilon-greedy exploration strategy - taken from Tue Herlaus course course 02465 - "Introduction to reinforcement learning and control theory """
     def pi(self, s, info=None):
         actions = self.env.A(s)
 
         return random.choice(actions) if np.random.rand() < self.epsilon else self.Q.get_optimal_action(s, info)
 
+    """The algorithm content """
     def DRQL_math(self, state):
         samples = 0
         delta_convergence = 0
@@ -138,20 +139,17 @@ class DRQL_agent(TabularAgent):
             T_epsilon = R_rob + self.gamma * T_rob
 
             alpha_t = 1 / (1 + (1 - self.gamma) * (self.t - 1))
-            #alpha_t = 0.5
-            # Alm. Q-læring: T_epsilon = R + gamma max_b Q[s´, b]
+
             Q_update = (1 - alpha_t) * self.Q.q_[state][action] + alpha_t * T_epsilon
 
-            diff_not_abs = Q_update - self.Q.q_[state][action]
             diff = abs(Q_update - self.Q.q_[state][action])
             self.Q.q_[state][action] = Q_update
-            # breakpoint()
+
             if diff > delta_convergence:
                 delta_convergence = diff
         return delta_convergence, samples
 
     def train(self, state, done=False, info_s=None, info_sp=None, gamma=0.9, goals=1000, tolerance=0.05):
-        converged = False
         samples = 0
         goal_count = 0
         while goals > goal_count:
@@ -173,11 +171,8 @@ class DRQL_agent(TabularAgent):
         return self.t, samples
 
 
-Q_res = []
-t_res = []
-sample_res = []
-res = []
 
+"""Function that enables MultiProcessing"""
 def MpLoop(step_down, delta=0):
     print("Started  ", step_down, flush=True)
     env_ = CliffWalkingEnvironment(step_down=step_down, render_mode="ansi")
@@ -189,8 +184,10 @@ def MpLoop(step_down, delta=0):
     print((agent.Q.q_, sample_it, step_down))
     return agent.Q.to_dict(), t_it, sample_it, step_down
 
+
 if __name__ == "__main__":
     step_array = [0.025, 0.05, 0.075, 0.1, 0.125, 0.150, 0.175, 0.2]
+    res = []
 
     res_total0 = []
     for delta0_it in range(1):
