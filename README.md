@@ -4,7 +4,7 @@
 
 ## Description
 
-This repo contains my implementation of a Distributionally Robust Q-learning (DRQL) algorithm from Zijian Liu's "Distributionally Robust Q-learning" (2023). The implementation was made in relation with my bachelors thesis. The DRQL-algorithm have been expanded to also be able to act in an online setting, where the environment is not fully defined. This is done by adding an exploration strategy for the agent. 
+This repo contains my implementation of a Distributionally Robust Q-learning (DRQL) algorithm from Zijian Liu's "Distributionally Robust Q-learning" (2023). The implementation was made in relation with my bachelors thesis. The DRQL-algorithm have been expanded to also be able to act in an online setting, where the environment is not fully defined. This is done by adding an epsilon-greedy exploration strategy for the agent. 
 
 ## Contact
 
